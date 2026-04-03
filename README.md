@@ -1,4 +1,4 @@
-# Visual Theme Foundry — v1.40
+# Visual Theme Foundry — v1.4.1
 
 A local-first tool for previewing and exporting Material Design 3 themes, typography, fonts, and icons for web applications.
 
@@ -110,7 +110,8 @@ Drop-in integration (no toolchain required):
 
 ```html
 <link rel="stylesheet" href="css/theme.css" />
-<script src="js/behaviors.js"></script>  <!-- optional -->
+<script src="js/behaviors.js"></script>
+<!-- optional -->
 ```
 
 Use `src/` if you have Dart Sass and TypeScript in your build pipeline. SCSS requires Dart Sass — LibSass and Ruby Sass are not supported. TypeScript targets ES2022.
@@ -123,11 +124,11 @@ The export includes only the icons you assigned — not the full normalized libr
 
 ## How the Build Tools Run
 
-| Tool                | How it runs                                                    | Node needed? |
-| ------------------- | -------------------------------------------------------------- | ------------ |
-| TypeScript compiler | `node _imports/typescript/lib/tsc.js --project tsconfig.json`  | Yes          |
-| Dart Sass           | `_imports/dart-sass/src/dart.exe sass.snapshot ...`            | No           |
-| Server              | `python server.py`                                             | No           |
+| Tool                | How it runs                                                   | Node needed? |
+| ------------------- | ------------------------------------------------------------- | ------------ |
+| TypeScript compiler | `node _imports/typescript/lib/tsc.js --project tsconfig.json` | Yes          |
+| Dart Sass           | `_imports/dart-sass/src/dart.exe sass.snapshot ...`           | No           |
+| Server              | `python server.py`                                            | No           |
 
 ---
 
