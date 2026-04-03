@@ -1,3 +1,4 @@
-This project does not have external dependencies.
-Packages for development (sass and typescript) are vendored in _imports.
-Node.js is required to build the project and should be installed separately.
+This project does not have external dependencies* (no packages need to be installed via pip/winget/npm/etc.). But, python and node.js are required to run the server and build the project, respectively (detailed below).  Install these to your system (globally for future use, or in a virtual environment if preferred).
+Packages for development (sass and typescript) are vendored in _imports. They are required to run the build scripts, but not to use the project itself.  Because these are vendored, they do not need to be installed separately.
+Node.js is required to build the project and should be installed separately. Recommended LTS version is 18.x.
+Python is required to run the server and should be installed separately. The project is compatible with Python 3.6 and above.

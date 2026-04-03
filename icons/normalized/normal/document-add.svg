@@ -1,0 +1,14 @@
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 200 200" width="200" height="200">
+  <g transform="translate(0 0) scale(0.390625)">
+    <defs />
+    <g transform="matrix(1.408401,0,0,1.408401,-86.86254,-121.70401)">
+      <g>
+        <path style="stroke-width:0.78027755" d="M 240.35997,148.37342 H 128 V 448 H 327.75105 V 235.37437 Z m 0,17.63427 70.06892,69.75682 h -70.06892 z m -99.87553,269.50787 v -274.6577 h 87.39109 v 87.39109 h 87.39108 v 187.26661 z" />
+        <g transform="matrix(0.20910364,0,0,0.20910364,505.211,136.522)">
+          <rect style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:11.49509144;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" width="117.82694" height="601.62354" x="-906.09991" y="-222.71008" />
+          <rect y="546.37469" x="19.188213" height="601.62354" width="117.82694" style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:11.49509144;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" transform="rotate(90)" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

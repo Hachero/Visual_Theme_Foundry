@@ -10,14 +10,17 @@ Purpose:
   - GET  /api/theme/<file>      — return one theme JSON
   - GET  /api/fonts             — list fonts/ files with family metadata
   - GET  /api/icons             — list icons/ files with grouped source summary
-  - POST /api/export-package    — build and download themed export zip
+  - POST /api/export-package    — build zip with selected theme/fonts/icons
+  - POST /api/theme/rename      — rename a material-theme-*.json file in color_themes/
+  - POST /api/normalize-icons   — normalize uploaded SVGs → icons/normalized/
+  - GET  /api/icons/normalized  — inventory of icons/normalized/ by weight + variant keys
 
 Export package structure (POST /api/export-package):
   Expects JSON body:
-    theme_file          — material-theme-*.json file name
-    selected_font_files — list of font file names from fonts/
-    icon_source         — "all", "root", or a subfolder name from icons/
-    typography_json     — typography config object from the UI
+    theme_file           — material-theme-*.json file name
+    selected_font_files  — list of font file names from fonts/
+    selected_icon_files  — list of relative paths under icons/ to include in export
+    typography_json      — typography config object from the UI
     plain_font_css      — CSS font-family string for body/label/title roles
     brand_font_css      — CSS font-family string for display/headline roles
 
@@ -57,6 +60,12 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+
+# tools/ is a sibling of server.py; add project root to sys.path so the
+# normalize_icons module can be imported without installing a package.
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from tools.normalize_icons import normalize_svg_content, WEIGHT_RUNS  # noqa: E402
 
 
 DEFAULT_VERBOSE = 0
@@ -691,6 +700,10 @@ class ThemeRequestHandler(SimpleHTTPRequestHandler):
             self._handle_icon_list()
             return
 
+        if route == "/api/icons/normalized":
+            self._handle_normalized_icon_list()
+            return
+
         if route.startswith("/api/theme/"):
             requested_name = unquote(route.removeprefix("/api/theme/"))
             self._handle_single_theme(requested_name)
@@ -713,6 +726,14 @@ class ThemeRequestHandler(SimpleHTTPRequestHandler):
 
         if route == "/api/export-package":
             self._handle_export_package()
+            return
+
+        if route == "/api/normalize-icons":
+            self._handle_normalize_icons()
+            return
+
+        if route == "/api/theme/rename":
+            self._handle_theme_rename()
             return
 
         self._send_json(404, {"error": "unknown api route"})
@@ -774,6 +795,259 @@ class ThemeRequestHandler(SimpleHTTPRequestHandler):
             },
         )
 
+    def _handle_normalized_icon_list(self) -> None:
+        """
+        Return the normalized icon inventory grouped by weight.
+
+        Scans icons/normalized/{light,normal,medium}/ and returns file lists
+        per weight, plus a flat deduplicated list of glyph variant keys derived
+        by stripping the trailing weight suffix from outline file names.
+
+        Response shape:
+            {
+              "weights": {
+                "light":  ["home-outline-light.svg", ...],
+                "normal": ["home-outline-normal.svg", ...],
+                "medium": ["home-outline-medium.svg", ...]
+              },
+              "variants": ["home-outline", "home-01", ...]   // deduped glyph keys
+            }
+
+        Returns:
+            None.
+
+        Example:
+            GET /api/icons/normalized
+        """
+        project_root = Path(self.directory or ".").resolve()
+        normalized_root = (project_root / "icons" / "normalized").resolve()
+
+        weight_files: dict[str, list[str]] = {}
+        variant_keys: dict[str, bool] = {}
+
+        for weight_label, _ in WEIGHT_RUNS:
+            weight_dir = normalized_root / weight_label
+            if not weight_dir.is_dir():
+                weight_files[weight_label] = []
+                continue
+            names = sorted(
+                p.name for p in weight_dir.iterdir()
+                if p.suffix.lower() == ".svg" and p.is_file()
+            )
+            weight_files[weight_label] = names
+            for name in names:
+                # Derive variant key: strip "-{weight}.svg" suffix for outline
+                # icons; strip ".svg" for filled icons.
+                stem = name[:-4]  # remove .svg
+                for wl, _ in WEIGHT_RUNS:
+                    if stem.endswith(f"-{wl}"):
+                        stem = stem[: -(len(wl) + 1)]
+                        break
+                variant_keys[stem] = True
+
+        self._send_json(
+            200,
+            {
+                "weights": weight_files,
+                "variants": sorted(variant_keys.keys()),
+            },
+        )
+
+    def _handle_normalize_icons(self) -> None:
+        """
+        Accept multipart SVG file uploads, normalize each to 200×200 in three
+        stroke-weight variants, write results to icons/normalized/, and return
+        the names of all newly written files grouped by weight.
+
+        Expected request:
+            Content-Type: multipart/form-data
+            Body: one or more SVG files
+
+        Security: only .svg files are accepted; file names are sanitized
+        (non-alphanumeric characters except hyphens and underscores replaced
+        with hyphens); path traversal is rejected; output is confined to
+        icons/normalized/ under the project root.
+
+        Response shape:
+            {
+              "written": {
+                "light":  ["uploaded-icon-light.svg", ...],
+                "normal": [...],
+                "medium": [...]
+              },
+              "errors": ["filename: reason", ...]
+            }
+
+        Returns:
+            None.
+
+        Example:
+            POST /api/normalize-icons  (multipart/form-data with SVG files)
+        """
+        import re as _re
+        from xml.etree import ElementTree as _ET
+        from tools.normalize_icons import _is_outline
+
+        try:
+            content_length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self._send_json(400, {"error": "invalid content length"})
+            return
+
+        if content_length <= 0:
+            self._send_json(400, {"error": "empty request body"})
+            return
+
+        content_type = self.headers.get("Content-Type", "")
+        if "multipart/form-data" not in content_type:
+            self._send_json(400, {"error": "expected multipart/form-data"})
+            return
+
+        # Parse boundary from Content-Type header
+        boundary_match = _re.search(r"boundary=([^\s;]+)", content_type)
+        if not boundary_match:
+            self._send_json(400, {"error": "missing multipart boundary"})
+            return
+        boundary = boundary_match.group(1).strip('"')
+
+        raw_body = self.rfile.read(content_length)
+
+        # Split on boundary markers; email.message parses each part's headers
+        # and body cleanly without the removed cgi module.
+        delimiter = f"--{boundary}".encode()
+        closing  = f"--{boundary}--".encode()
+        parts_raw = raw_body.split(delimiter)
+
+        project_root = Path(self.directory or ".").resolve()
+        normalized_root = (project_root / "icons" / "normalized").resolve()
+
+        written: dict[str, list[str]] = {wl: [] for wl, _ in WEIGHT_RUNS}
+        errors: list[str] = []
+
+        for part_bytes in parts_raw:
+            part_bytes = part_bytes.strip(b"\r\n")
+            if not part_bytes or part_bytes in (b"--", closing):
+                continue
+
+            # Split raw part into header block and body on the first blank line.
+            # Avoids email.message type-stub issues with get_payload(decode=True).
+            if b"\r\n\r\n" in part_bytes:
+                header_block, body_bytes = part_bytes.split(b"\r\n\r\n", 1)
+            elif b"\n\n" in part_bytes:
+                header_block, body_bytes = part_bytes.split(b"\n\n", 1)
+            else:
+                continue
+
+            header_text = header_block.decode("utf-8", errors="replace")
+            fname_match = _re.search(r'filename="?([^";]+)"?', header_text)
+            if not fname_match:
+                continue
+
+            raw_name = fname_match.group(1).strip()
+            if not raw_name.lower().endswith(".svg"):
+                errors.append(f"{raw_name}: only .svg files accepted")
+                continue
+
+            safe_stem = _re.sub(r"[^a-zA-Z0-9_-]", "-", Path(raw_name).stem)
+            safe_stem = _re.sub(r"-{2,}", "-", safe_stem).strip("-") or "upload"
+
+            if not body_bytes:
+                errors.append(f"{raw_name}: empty payload")
+                continue
+
+            svg_text = body_bytes.rstrip(b"\r\n").decode("utf-8", errors="replace")
+
+            for weight_label, stroke_width in WEIGHT_RUNS:
+                target_dir = normalized_root / weight_label
+                target_dir.mkdir(parents=True, exist_ok=True)
+
+                normalized = normalize_svg_content(
+                    svg_text, safe_stem, weight_label, stroke_width
+                )
+                if normalized is None:
+                    errors.append(f"{raw_name}: SVG parse failed")
+                    break
+
+                try:
+                    root_el = _ET.fromstring(svg_text)
+                    is_ol = _is_outline(root_el, safe_stem.lower())
+                except _ET.ParseError:
+                    is_ol = "outline" in safe_stem.lower()
+
+                out_name = (
+                    f"{safe_stem}-{weight_label}.svg" if is_ol
+                    else f"{safe_stem}.svg"
+                )
+                out_path = (target_dir / out_name).resolve()
+                if not out_path.is_relative_to(target_dir):
+                    errors.append(f"{raw_name}: path traversal rejected")
+                    break
+
+                out_path.write_text(normalized, encoding="utf-8")
+                written[weight_label].append(out_name)
+                LOGGER.debug("Normalized upload → %s", out_path)
+
+        self._send_json(200, {"written": written, "errors": errors})
+
+    def _handle_theme_rename(self) -> None:
+        """
+        Rename a material-theme-*.json file in color_themes/.
+
+        Expected POST body (JSON):
+            from_name: current file name (material-theme-*.json)
+            to_name:   new file name     (material-theme-*.json)
+
+        Returns:
+            None.
+
+        Example:
+            POST /api/theme/rename
+            {"from_name": "material-theme-OldName.json", "to_name": "material-theme-NewName.json"}
+        """
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+            body = json.loads(self.rfile.read(length))
+        except (ValueError, json.JSONDecodeError):
+            self._send_json(400, {"error": "invalid JSON body"})
+            return
+
+        from_name = body.get("from_name", "")
+        to_name = body.get("to_name", "")
+
+        def _valid(name: str) -> bool:
+            return (
+                isinstance(name, str)
+                and "/" not in name
+                and "\\" not in name
+                and name.startswith("material-theme-")
+                and name.endswith(".json")
+            )
+
+        if not _valid(from_name) or not _valid(to_name):
+            self._send_json(400, {"error": "invalid file name"})
+            return
+
+        project_root = Path(self.directory or ".").resolve()
+        theme_dir = (project_root / THEME_DIR_NAME).resolve()
+        from_path = (theme_dir / from_name).resolve()
+        to_path = (theme_dir / to_name).resolve()
+
+        if from_path.parent != theme_dir or to_path.parent != theme_dir:
+            self._send_json(400, {"error": "path traversal not allowed"})
+            return
+
+        if not from_path.is_file():
+            self._send_json(404, {"error": "source file not found"})
+            return
+
+        if to_path.exists():
+            self._send_json(409, {"error": "target file already exists"})
+            return
+
+        from_path.rename(to_path)
+        LOGGER.info("Theme file renamed: %s -> %s", from_name, to_name)
+        self._send_json(200, {"renamed": to_name})
+
     def _handle_single_theme(self, theme_file_name: str) -> None:
         """
         Return JSON payload for a requested theme file.
@@ -828,12 +1102,13 @@ class ThemeRequestHandler(SimpleHTTPRequestHandler):
         Build and return a zip export package for current UI selections.
 
         Expected POST body (JSON):
-            theme_file          — material-theme-*.json file name in color_themes/
-            selected_font_files — list of font file names from fonts/
-            icon_source         — "all", "root", or a subfolder name from icons/
-            typography_json     — typography config object from the UI
-            plain_font_css      — CSS font-family string for body/label/title roles
-            brand_font_css      — CSS font-family string for display/headline roles
+            theme_file           — material-theme-*.json file name in color_themes/
+            selected_font_files  — list of font file names from fonts/
+            selected_icon_files  — list of relative paths under icons/ to include,
+                                   e.g. ["normalized/normal/home-outline-01-normal.svg"]
+            typography_json      — typography config object from the UI
+            plain_font_css       — CSS font-family string for body/label/title roles
+            brand_font_css       — CSS font-family string for display/headline roles
 
         Zip structure produced:
             css/theme.css        — compiled CSS (omitted if Dart Sass unavailable)
@@ -901,7 +1176,10 @@ class ThemeRequestHandler(SimpleHTTPRequestHandler):
         if not isinstance(selected_fonts, list):
             selected_fonts = []
 
-        selected_icon_source = str(payload.get("icon_source", "all")).strip() or "all"
+        raw_icon_files = payload.get("selected_icon_files", [])
+        selected_icon_files: list[str] = (
+            [str(p) for p in raw_icon_files] if isinstance(raw_icon_files, list) else []
+        )
 
         typography_json = payload.get("typography_json", {})
         if not isinstance(typography_json, dict):
@@ -930,18 +1208,21 @@ class ThemeRequestHandler(SimpleHTTPRequestHandler):
         # ── Compile CSS (best-effort) ──────────────────────────────────────────
         compiled_css = _compile_export_scss(project_root, tokens_content, typography_content)
 
-        # ── Filter icon files ──────────────────────────────────────────────────
-        all_icon_files = list_asset_files(project_root, "icons", ICON_FILE_EXTENSIONS)
-        if selected_icon_source == "all":
-            export_icon_files = all_icon_files
-        elif selected_icon_source == "root":
-            export_icon_files = [p for p in all_icon_files if "/" not in p]
-        else:
-            export_icon_files = [
-                p for p in all_icon_files if p.startswith(f"{selected_icon_source}/")
-            ]
-
+        # ── Validate and resolve selected icon files ───────────────────────────
+        # selected_icon_files contains relative paths under icons/ such as
+        # "normalized/normal/home-outline-01-normal.svg". Each is validated to
+        # prevent path traversal before being written into the zip.
         icons_folder = (project_root / "icons").resolve()
+        export_icon_files: list[str] = []
+        for rel in selected_icon_files:
+            # Strip leading slashes/dots and normalise separators.
+            clean = rel.strip().lstrip("/\\")
+            candidate = (icons_folder / clean).resolve()
+            if icons_folder not in candidate.parents:
+                LOGGER.warning("Icon path traversal attempt blocked: %s", rel)
+                continue
+            if candidate.is_file():
+                export_icon_files.append(clean)
         fonts_dir = (project_root / "fonts").resolve()
         templates_dir = project_root / EXPORT_TEMPLATES_DIR_NAME
 

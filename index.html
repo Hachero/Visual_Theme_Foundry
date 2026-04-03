@@ -247,6 +247,68 @@
 				background: color-mix(in srgb, var(--panel) 82%, transparent);
 			}
 
+			/* Numeric features card — same visual treatment as typography-studio */
+			.numeric-features-card {
+				padding: 0.8rem;
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				margin-bottom: 1rem;
+				background: color-mix(in srgb, var(--panel) 82%, transparent);
+			}
+
+			/*
+			 * Shared collapsible-section header, toggle, and body rules.
+			 * Applied to both .typography-studio and .numeric-features-card.
+			 * Each section adds its own __header / __toggle / __body suffix.
+			 */
+			.typography-studio__header,
+			.numeric-features-card__header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				position: sticky;
+				top: 0;
+				z-index: 20;
+				background: var(--panel);
+				backdrop-filter: blur(6px);
+				/* Pull out to section edges so the sticky bar spans the full panel width */
+				margin: -0.8rem -0.8rem 0.6rem;
+				padding: 0 0.8rem;
+				min-height: 40px;
+				border-radius: 11px 11px 0 0;
+			}
+
+			/* When collapsed the header is the entire visible strip */
+			.typography-studio--collapsed .typography-studio__header,
+			.numeric-features-card--collapsed .numeric-features-card__header {
+				border-radius: 11px;
+				margin-bottom: -0.8rem;
+			}
+
+			.typography-studio__toggle,
+			.numeric-features-card__toggle {
+				background: none;
+				border: 1px solid var(--control-border);
+				border-radius: 6px;
+				padding: 0.15rem 0.55rem;
+				cursor: pointer;
+				color: var(--control-fg);
+				font-size: 0.78rem;
+				line-height: 1;
+				opacity: 0.7;
+				transition: opacity 0.15s;
+			}
+
+			.typography-studio__toggle:hover,
+			.numeric-features-card__toggle:hover {
+				opacity: 1;
+			}
+
+			.typography-studio--collapsed .typography-studio__body,
+			.numeric-features-card--collapsed .numeric-features-card__body {
+				display: none;
+			}
+
 			.typography-controls {
 				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -299,6 +361,234 @@
 				font-size: 0.85rem;
 			}
 
+			/* ── Icon Role Browser ──────────────────────────────────────────────────
+			 * Horizontal-bar layout: one row per main-primary icon role.
+			 * Left: custom dropdown (SVG thumbnail + label).
+			 * Center: weight radios (light / normal / medium).
+			 * Right: role-context preview (icon sized for its typical UI position).
+			 * Bottom: drag/drop normalization zone.
+			 */
+			.icon-role-browser {
+				padding: 0.8rem;
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				margin-bottom: 1rem;
+				background: color-mix(in srgb, var(--panel) 82%, transparent);
+			}
+
+			.icon-role-browser__header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				position: sticky;
+				top: 0;
+				z-index: 20;
+				background: var(--panel);
+				backdrop-filter: blur(6px);
+				margin: -0.8rem -0.8rem 0.6rem;
+				padding: 0 0.8rem;
+				min-height: 40px;
+				border-radius: 11px 11px 0 0;
+			}
+
+			.icon-role-browser--collapsed .icon-role-browser__header {
+				border-radius: 11px;
+				margin-bottom: -0.8rem;
+			}
+
+			.icon-role-browser__toggle {
+				background: none;
+				border: 1px solid var(--control-border);
+				border-radius: 6px;
+				padding: 0.15rem 0.55rem;
+				cursor: pointer;
+				color: var(--control-fg);
+				font-size: 0.78rem;
+				line-height: 1;
+				opacity: 0.7;
+				transition: opacity 0.15s;
+			}
+
+			.icon-role-browser__toggle:hover { opacity: 1; }
+
+			.icon-role-browser--collapsed .icon-role-browser__body { display: none; }
+
+			/* One horizontal bar per role */
+			.icon-role-bar {
+				display: grid;
+				grid-template-columns: 1fr auto auto;
+				align-items: center;
+				gap: 0.6rem;
+				padding: 0.45rem 0;
+				border-bottom: 1px solid var(--border);
+			}
+
+			.icon-role-bar:last-of-type { border-bottom: none; }
+
+			/* Left section: label + custom dropdown */
+			.icon-role-bar__left {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				min-width: 0;
+			}
+
+			.icon-role-bar__label {
+				font-size: 0.82rem;
+				font-weight: 600;
+				white-space: nowrap;
+				min-width: 6rem;
+				opacity: 0.85;
+			}
+
+			/* Custom dropdown trigger — shows thumbnail + name */
+			.icon-dropdown {
+				position: relative;
+				display: inline-flex;
+				align-items: center;
+				gap: 0.35rem;
+				padding: 0.2rem 0.5rem 0.2rem 0.3rem;
+				border: 1px solid var(--control-border);
+				border-radius: 7px;
+				background: var(--control-bg);
+				color: var(--control-fg);
+				cursor: pointer;
+				font-size: 0.8rem;
+				user-select: none;
+				max-width: 200px;
+			}
+
+			.icon-dropdown__thumb {
+				width: 20px;
+				height: 20px;
+				flex-shrink: 0;
+				/* SVG color inherits from text color via CSS mask */
+				-webkit-mask-size: contain;
+				-webkit-mask-repeat: no-repeat;
+				-webkit-mask-position: center;
+				mask-size: contain;
+				mask-repeat: no-repeat;
+				mask-position: center;
+				background-color: currentColor;
+			}
+
+			.icon-dropdown__name {
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				flex: 1;
+			}
+
+			.icon-dropdown__arrow { opacity: 0.55; font-size: 0.65rem; }
+
+			/* Dropdown panel */
+			.icon-dropdown-panel {
+				position: absolute;
+				top: calc(100% + 4px);
+				left: 0;
+				z-index: 200;
+				background: var(--panel);
+				border: 1px solid var(--border);
+				border-radius: 9px;
+				box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+				max-height: 280px;
+				overflow-y: auto;
+				min-width: 220px;
+				padding: 0.3rem 0;
+			}
+
+			.icon-dropdown-panel[hidden] { display: none; }
+
+			.icon-dropdown-option {
+				display: flex;
+				align-items: center;
+				gap: 0.4rem;
+				padding: 0.3rem 0.7rem;
+				font-size: 0.8rem;
+				cursor: pointer;
+			}
+
+			.icon-dropdown-option:hover,
+			.icon-dropdown-option[aria-selected="true"] {
+				background: color-mix(in srgb, var(--control-active-bg) 18%, transparent);
+			}
+
+			.icon-dropdown-option__thumb {
+				width: 20px;
+				height: 20px;
+				flex-shrink: 0;
+				-webkit-mask-size: contain;
+				-webkit-mask-repeat: no-repeat;
+				-webkit-mask-position: center;
+				mask-size: contain;
+				mask-repeat: no-repeat;
+				mask-position: center;
+				background-color: currentColor;
+			}
+
+			/* Center: weight radios */
+			.icon-weight-radios {
+				display: flex;
+				gap: 0.3rem;
+				align-items: center;
+			}
+
+			.icon-weight-radio {
+				display: flex;
+				align-items: center;
+				gap: 0.2rem;
+				font-size: 0.75rem;
+				cursor: pointer;
+				white-space: nowrap;
+			}
+
+			/* Right: role context preview */
+			.icon-role-preview {
+				width: 48px;
+				height: 48px;
+				flex-shrink: 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			.icon-role-preview__img {
+				/* Sized per role via inline style; color via mask */
+				-webkit-mask-size: contain;
+				-webkit-mask-repeat: no-repeat;
+				-webkit-mask-position: center;
+				mask-size: contain;
+				mask-repeat: no-repeat;
+				mask-position: center;
+				background-color: var(--md-sys-color-on-surface-variant, currentColor);
+				display: block;
+			}
+
+			/* Drag/drop normalization zone */
+			.icon-drop-zone {
+				margin-top: 0.8rem;
+				border: 2px dashed var(--control-border);
+				border-radius: 10px;
+				padding: 0.9rem 1rem;
+				text-align: center;
+				font-size: 0.82rem;
+				opacity: 0.7;
+				transition: opacity 0.15s, border-color 0.15s;
+				cursor: pointer;
+			}
+
+			.icon-drop-zone.drag-over {
+				opacity: 1;
+				border-color: var(--md-sys-color-primary, currentColor);
+			}
+
+			.icon-drop-zone__status {
+				display: block;
+				margin-top: 0.3rem;
+				font-size: 0.78rem;
+				opacity: 0.8;
+			}
+
 			.token-note {
 				font-size: 0.76rem;
 				opacity: 0.78;
@@ -318,6 +608,24 @@
 				gap: 0.5rem;
 				flex-wrap: wrap;
 				margin-top: 0.8rem;
+			}
+
+			/* Export card pinned at the top of the quick-nav panel */
+			.export-card {
+				padding-bottom: 0.75rem;
+				margin-bottom: 0.75rem;
+				border-bottom: 1px solid var(--border);
+			}
+
+			.export-card .md-btn {
+				width: 100%;
+				justify-content: center;
+			}
+
+			.export-card .export-hint {
+				display: block;
+				margin-top: 0.4rem;
+				text-align: center;
 			}
 
 			.export-hint {
@@ -456,133 +764,229 @@
 				<p class="status">
 					Use the checkboxes in each component section to show/hide variants.
 				</p>
+
 			</aside>
 
 			<main class="panel preview">
 				<section class="numeric-features-card" id="numeric-features">
-					<h2 class="md-typescale-title-large" style="margin: 0 0 0.25rem">Numeric Features</h2>
-					<p class="subtle" style="margin-top: 0">OpenType <code>font-variant-numeric</code> classes. Toggle to preview — active selections are included in the SCSS export.</p>
-
-					<div class="numeric-feature-row numeric-feature-row--normal">
-						<span class="numeric-feature-label md-typescale-label-medium">Normal</span>
-						<span class="numeric-preview">0 1 2 3 4 5 6 7 8 9</span>
+					<div class="numeric-features-card__header">
+						<h2 class="md-typescale-title-large" style="margin: 0">Numeric Features</h2>
+						<button
+							class="numeric-features-card__toggle"
+							id="numeric-features-toggle"
+							type="button"
+							aria-expanded="true"
+							aria-controls="numeric-features-body"
+						>
+							<span class="numeric-features-card__toggle-icon" aria-hidden="true">▲</span>
+						</button>
 					</div>
+					<div class="numeric-features-card__body" id="numeric-features-body">
+						<p class="subtle" style="margin-top: 0">OpenType <code>font-variant-numeric</code> classes. Toggle to preview — active selections are included in the SCSS export.</p>
 
-					<div class="numeric-feature-row" data-feature="tabular">
-						<label class="row">
-							<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-tabular"
-								data-class="md-numeric--tabular" data-preview="tabular" />
-							<span class="numeric-feature-label md-typescale-label-medium">tabular-nums</span>
-						</label>
-						<span class="numeric-preview" data-preview="tabular">0 1 2 3 4 5 6 7 8 9</span>
-					</div>
+						<div class="numeric-feature-row numeric-feature-row--normal">
+							<span class="numeric-feature-label md-typescale-label-medium">Normal</span>
+							<span class="numeric-preview">0 1 2 3 4 5 6 7 8 9</span>
+						</div>
 
-					<div class="numeric-feature-row" data-feature="oldstyle">
-						<label class="row">
-							<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-oldstyle"
-								data-class="md-numeric--oldstyle" data-preview="oldstyle" />
-							<span class="numeric-feature-label md-typescale-label-medium">oldstyle-nums</span>
-						</label>
-						<span class="numeric-preview" data-preview="oldstyle">0 1 2 3 4 5 6 7 8 9</span>
-					</div>
+						<div class="numeric-feature-row" data-feature="tabular">
+							<label class="row">
+								<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-tabular"
+									data-class="md-numeric--tabular" data-preview="tabular" />
+								<span class="numeric-feature-label md-typescale-label-medium">tabular-nums</span>
+							</label>
+							<span class="numeric-preview" data-preview="tabular">0 1 2 3 4 5 6 7 8 9</span>
+						</div>
 
-					<div class="numeric-feature-row" data-feature="tabular-oldstyle">
-						<label class="row">
-							<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-tabular-oldstyle"
-								data-class="md-numeric--tabular-oldstyle" data-preview="tabular-oldstyle" />
-							<span class="numeric-feature-label md-typescale-label-medium">tabular-nums + oldstyle-nums</span>
-						</label>
-						<span class="numeric-preview" data-preview="tabular-oldstyle">0 1 2 3 4 5 6 7 8 9</span>
-					</div>
+						<div class="numeric-feature-row" data-feature="oldstyle">
+							<label class="row">
+								<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-oldstyle"
+									data-class="md-numeric--oldstyle" data-preview="oldstyle" />
+								<span class="numeric-feature-label md-typescale-label-medium">oldstyle-nums</span>
+							</label>
+							<span class="numeric-preview" data-preview="oldstyle">0 1 2 3 4 5 6 7 8 9</span>
+						</div>
 
-					<div class="numeric-feature-row" data-feature="fractions">
-						<label class="row">
-							<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-fractions"
-								data-class="md-numeric--fractions" data-preview="fractions" />
-							<span class="numeric-feature-label md-typescale-label-medium">diagonal-fractions</span>
-						</label>
-						<span class="numeric-preview" data-preview="fractions">1/2 &nbsp; 3/4 &nbsp; 5/6 &nbsp; 7/8</span>
-					</div>
+						<div class="numeric-feature-row" data-feature="tabular-oldstyle">
+							<label class="row">
+								<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-tabular-oldstyle"
+									data-class="md-numeric--tabular-oldstyle" data-preview="tabular-oldstyle" />
+								<span class="numeric-feature-label md-typescale-label-medium">tabular-nums + oldstyle-nums</span>
+							</label>
+							<span class="numeric-preview" data-preview="tabular-oldstyle">0 1 2 3 4 5 6 7 8 9</span>
+						</div>
 
-					<div class="numeric-feature-row" data-feature="ordinal">
-						<label class="row">
-							<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-ordinal"
-								data-class="md-numeric--ordinal" data-preview="ordinal" />
-							<span class="numeric-feature-label md-typescale-label-medium">ordinal</span>
-						</label>
-						<span class="numeric-preview" data-preview="ordinal">1st &nbsp; 2nd &nbsp; 3rd &nbsp; 4th</span>
-					</div>
+						<div class="numeric-feature-row" data-feature="fractions">
+							<label class="row">
+								<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-fractions"
+									data-class="md-numeric--fractions" data-preview="fractions" />
+								<span class="numeric-feature-label md-typescale-label-medium">diagonal-fractions</span>
+							</label>
+							<span class="numeric-preview" data-preview="fractions">1/2 &nbsp; 3/4 &nbsp; 5/6 &nbsp; 7/8</span>
+						</div>
 
-					<!-- Shown only when tabular-nums is checked -->
-					<div class="numeric-currency-note" id="numeric-currency-note" hidden>
-						<span class="numeric-currency-label md-typescale-label-small">
-							<strong>.md-currency</strong> included in export<br />
-							<span style="opacity: 0.7">lining-nums + tabular-nums — aligns currency columns</span>
-						</span>
-						<span class="numeric-preview md-currency">$1,234.56 &nbsp; &euro;2,890.00 &nbsp; &yen;45,678</span>
+						<div class="numeric-feature-row" data-feature="ordinal">
+							<label class="row">
+								<input type="checkbox" class="md-checkbox nf-checkbox" id="nf-ordinal"
+									data-class="md-numeric--ordinal" data-preview="ordinal" />
+								<span class="numeric-feature-label md-typescale-label-medium">ordinal</span>
+							</label>
+							<span class="numeric-preview" data-preview="ordinal">1st &nbsp; 2nd &nbsp; 3rd &nbsp; 4th</span>
+						</div>
+
+						<!-- Shown only when tabular-nums is checked -->
+						<div class="numeric-currency-note" id="numeric-currency-note" hidden>
+							<span class="numeric-currency-label md-typescale-label-small">
+								<strong>.md-currency</strong> included in export<br />
+								<span style="opacity: 0.7">lining-nums + tabular-nums — aligns currency columns</span>
+							</span>
+							<span class="numeric-preview md-currency">$1,234.56 &nbsp; &euro;2,890.00 &nbsp; &yen;45,678</span>
+						</div>
 					</div>
 				</section>
 
 				<section class="typography-studio" id="typography-studio">
-					<h2 class="md-typescale-title-large" style="margin: 0 0 0.4rem">
-						Typography Studio
-					</h2>
-					<p class="subtle" style="margin-top: 0">
-						Per-style cards: semantic + material type roles. Export includes
-						JSON, Sass API, utility classes, selected fonts, selected icons, and
-						active color theme.
-					</p>
-					<div class="typography-controls">
-						<div>
-							<label for="typography-base-size" class="md-typescale-title-small"
-								>Default Font Size (px)</label
-							>
-							<input
-								id="typography-base-size"
-								type="number"
-								value="16"
-								min="10"
-								max="40"
-								step="1"
-								style="width: 100%; margin-top: 0.35rem"
-							/>
+					<div class="typography-studio__header">
+						<h2 class="md-typescale-title-large" style="margin: 0">
+							Typography Studio
+						</h2>
+						<button
+							class="typography-studio__toggle"
+							id="typography-studio-toggle"
+							type="button"
+							aria-expanded="true"
+							aria-controls="typography-studio-body"
+						>
+							<span class="typography-studio__toggle-icon" aria-hidden="true">▲</span>
+						</button>
+					</div>
+					<div class="typography-studio__body" id="typography-studio-body">
+						<p class="subtle" style="margin-top: 0">
+							Per-style cards: semantic + material type roles. Export includes
+							JSON, Sass API, utility classes, selected fonts, selected icons, and
+							active color theme.
+						</p>
+						<div class="typography-controls">
+							<div>
+								<label for="typography-base-size" class="md-typescale-title-small"
+									>Default Font Size (px)</label
+								>
+								<input
+									id="typography-base-size"
+									type="number"
+									value="16"
+									min="10"
+									max="40"
+									step="1"
+									style="width: 100%; margin-top: 0.35rem"
+								/>
+							</div>
+							<div>
+								<label
+									for="responsive-mode-select"
+									class="md-typescale-title-small"
+									>Responsive Mode</label
+								>
+								<select id="responsive-mode-select">
+									<option value="clamp">Clamp-Based</option>
+									<option value="breakpoints">Breakpoint Presets</option>
+									<option value="both" selected>Both</option>
+								</select>
+							</div>
 						</div>
-						<div>
-							<label
-								for="responsive-mode-select"
-								class="md-typescale-title-small"
-								>Responsive Mode</label
-							>
-							<select id="responsive-mode-select">
-								<option value="clamp">Clamp-Based</option>
-								<option value="breakpoints">Breakpoint Presets</option>
-								<option value="both" selected>Both</option>
-							</select>
+
+						<div class="typography-controls" id="line-height-groups"></div>
+						<div class="typography-cards" id="font-style-cards"></div>
+					</div>
+				</section>
+
+				<!-- ── Main-Primary Icon Browser ──────────────────────────────────── -->
+				<section class="icon-role-browser" id="icon-role-browser">
+					<div class="icon-role-browser__header">
+						<h2 class="md-typescale-title-large" style="margin: 0">Icon Roles</h2>
+						<button
+							class="icon-role-browser__toggle"
+							id="icon-role-browser-toggle"
+							type="button"
+							aria-expanded="true"
+							aria-controls="icon-role-browser-body"
+						>
+							<span class="icon-role-browser__toggle-icon" aria-hidden="true">▲</span>
+						</button>
+					</div>
+					<div class="icon-role-browser__body" id="icon-role-browser-body">
+						<p class="subtle" style="margin-top: 0">
+							Select a normalized icon variant for each core UI role. Weight
+							controls apply stroke width — all three weights are pre-rendered.
+						</p>
+						<!-- Role bars injected by JS: initializeIconRoleBrowser() -->
+						<div id="icon-role-list"></div>
+
+						<!-- Drag/drop custom icon normalization -->
+						<div class="icon-drop-zone" id="icon-drop-zone" role="button" tabindex="0"
+							aria-label="Drop SVG files to normalize and add to the icon set">
+							Drop SVG files here to normalize and add to your icon set
+							<span class="icon-drop-zone__status" id="icon-drop-zone-status" aria-live="polite"></span>
 						</div>
-						<div>
-							<label for="icon-export-source" class="md-typescale-title-small"
-								>Icon Export Source</label
-							>
-							<select id="icon-export-source"></select>
+					</div>
+				</section>
+				<hr />
+
+				<section class="component-block" data-component="icon-buttons">
+					<div class="row">
+						<input class="component-toggle" type="checkbox" checked />
+						<span class="component-label">Icon Buttons</span>
+					</div>
+
+					<div class="variant-row" data-variant="standard">
+						<label class="row">
+							<input class="variant-toggle" type="checkbox" checked />
+							<span class="variant-name">Standard</span>
+						</label>
+						<div class="variant-demo">
+							<button class="md-icon-btn" aria-label="Search">
+								<span class="md-icon" style="--icon-src: url('/icons/search-outline.svg')" aria-hidden="true"></span>
+							</button>
+							<button class="md-icon-btn" disabled aria-label="Search (disabled)">
+								<span class="md-icon" style="--icon-src: url('/icons/search-outline.svg')" aria-hidden="true"></span>
+							</button>
 						</div>
 					</div>
 
-					<div class="typography-controls" id="line-height-groups"></div>
-					<div class="typography-cards" id="font-style-cards"></div>
+					<div class="variant-row" data-variant="filled">
+						<label class="row">
+							<input class="variant-toggle" type="checkbox" checked />
+							<span class="variant-name">Filled</span>
+						</label>
+						<div class="variant-demo">
+							<button class="md-icon-btn md-icon-btn--filled" aria-label="Create">
+								<span class="md-icon" style="--icon-src: url('/icons/create-outline.svg')" aria-hidden="true"></span>
+							</button>
+							<button class="md-icon-btn md-icon-btn--filled" disabled aria-label="Create (disabled)">
+								<span class="md-icon" style="--icon-src: url('/icons/create-outline.svg')" aria-hidden="true"></span>
+							</button>
+						</div>
+					</div>
+				</section>
+				<hr />
 
-					<div class="export-row">
-						<button class="md-btn md-btn--filled" id="export-theme-package-button">
-							<span class="btn-label">Export Theme Package</span>
-							<span class="btn-spinner" aria-hidden="true">
-								<div class="md-progress-circular md-progress-circular--indeterminate">
-									<svg viewBox="0 0 48 48" class="md-progress-circular__svg">
-										<circle class="md-progress-circular__track" cx="24" cy="24" r="20" />
-										<circle class="md-progress-circular__indicator" cx="24" cy="24" r="20" />
-									</svg>
-								</div>
-							</span>
-						</button>
-						<span id="export-status" class="export-hint">Ready to export.</span>
+				<section class="component-block" data-component="icons">
+					<div class="row">
+						<input class="component-toggle" type="checkbox" checked />
+						<span class="component-label">Icons</span>
+					</div>
+
+					<div class="variant-row" data-variant="material-icons">
+						<label class="row">
+							<input class="variant-toggle" type="checkbox" checked />
+							<span class="variant-name">SVG Icons (project root)</span>
+						</label>
+						<div class="variant-demo" style="color: var(--md-sys-color-primary)">
+							<span class="md-icon md-icon--lg" style="--icon-src: url('/icons/home-outline.svg')" role="img" aria-label="home"></span>
+							<span class="md-icon md-icon--lg" style="--icon-src: url('/icons/settings-outline.svg')" role="img" aria-label="settings"></span>
+							<span class="md-icon md-icon--lg" style="--icon-src: url('/icons/alert-outline.svg')" role="img" aria-label="notifications"></span>
+							<span class="md-icon md-icon--lg" style="--icon-src: url('/icons/schedule.svg')" role="img" aria-label="schedule"></span>
+						</div>
 					</div>
 				</section>
 
@@ -626,44 +1030,6 @@
 					</div>
 				</section>
 
-				<hr />
-
-				<section class="component-block" data-component="icon-buttons">
-					<div class="row">
-						<input class="component-toggle" type="checkbox" checked />
-						<span class="component-label">Icon Buttons</span>
-					</div>
-
-					<div class="variant-row" data-variant="standard">
-						<label class="row">
-							<input class="variant-toggle" type="checkbox" checked />
-							<span class="variant-name">Standard</span>
-						</label>
-						<div class="variant-demo">
-							<button class="md-icon-btn" aria-label="Search">
-								<span class="md-icon" style="--icon-src: url('/icons/search-outline.svg')" aria-hidden="true"></span>
-							</button>
-							<button class="md-icon-btn" disabled aria-label="Search (disabled)">
-								<span class="md-icon" style="--icon-src: url('/icons/search-outline.svg')" aria-hidden="true"></span>
-							</button>
-						</div>
-					</div>
-
-					<div class="variant-row" data-variant="filled">
-						<label class="row">
-							<input class="variant-toggle" type="checkbox" checked />
-							<span class="variant-name">Filled</span>
-						</label>
-						<div class="variant-demo">
-							<button class="md-icon-btn md-icon-btn--filled" aria-label="Create">
-								<span class="md-icon" style="--icon-src: url('/icons/create-outline.svg')" aria-hidden="true"></span>
-							</button>
-							<button class="md-icon-btn md-icon-btn--filled" disabled aria-label="Create (disabled)">
-								<span class="md-icon" style="--icon-src: url('/icons/create-outline.svg')" aria-hidden="true"></span>
-							</button>
-						</div>
-					</div>
-				</section>
 
 				<hr />
 
@@ -680,8 +1046,8 @@
 						</label>
 						<div class="variant-demo">
 							<label class="md-textfield md-textfield--outlined">
-								<input class="md-textfield__input" type="text" placeholder=" " value="OnSiteXI" />
-								<span class="md-textfield__label">Project name</span>
+								<input class="md-textfield__input" id="project-name-input" type="text" placeholder=" " />
+								<span class="md-textfield__label">Enter project name</span>
 							</label>
 						</div>
 					</div>
@@ -693,7 +1059,7 @@
 						</label>
 						<div class="variant-demo">
 							<label class="md-textfield md-textfield--filled">
-								<input class="md-textfield__input" type="text" placeholder=" " value="#CB760D" />
+								<input class="md-textfield__input" id="primary-color-input" type="text" placeholder=" " readonly />
 								<span class="md-textfield__label">Primary color</span>
 								<span class="md-textfield__indicator"></span>
 							</label>
@@ -946,27 +1312,6 @@
 					</div>
 				</section>
 
-				<hr />
-
-				<section class="component-block" data-component="icons">
-					<div class="row">
-						<input class="component-toggle" type="checkbox" checked />
-						<span class="component-label">Icons</span>
-					</div>
-
-					<div class="variant-row" data-variant="material-icons">
-						<label class="row">
-							<input class="variant-toggle" type="checkbox" checked />
-							<span class="variant-name">SVG Icons (project root)</span>
-						</label>
-						<div class="variant-demo" style="color: var(--md-sys-color-primary)">
-							<span class="md-icon md-icon--lg" style="--icon-src: url('/icons/home-outline.svg')" role="img" aria-label="home"></span>
-							<span class="md-icon md-icon--lg" style="--icon-src: url('/icons/settings-outline.svg')" role="img" aria-label="settings"></span>
-							<span class="md-icon md-icon--lg" style="--icon-src: url('/icons/alert-outline.svg')" role="img" aria-label="notifications"></span>
-							<span class="md-icon md-icon--lg" style="--icon-src: url('/icons/schedule.svg')" role="img" aria-label="schedule"></span>
-						</div>
-					</div>
-				</section>
 
 				<hr />
 
@@ -1015,6 +1360,20 @@
 			</main>
 
 			<aside class="panel quick-nav">
+				<div class="export-card">
+					<button class="md-btn md-btn--filled" id="export-theme-package-button">
+						<span class="btn-label">Export Theme Package</span>
+						<span class="btn-spinner" aria-hidden="true">
+							<div class="md-progress-circular md-progress-circular--indeterminate">
+								<svg viewBox="0 0 48 48" class="md-progress-circular__svg">
+									<circle class="md-progress-circular__track" cx="24" cy="24" r="20" />
+									<circle class="md-progress-circular__indicator" cx="24" cy="24" r="20" />
+								</svg>
+							</div>
+						</span>
+					</button>
+					<span id="export-status" class="export-hint">Ready to export.</span>
+				</div>
 				<h2 class="md-typescale-title-medium" style="margin: 0 0 0.35rem">
 					Jump To
 				</h2>
@@ -1024,6 +1383,13 @@
 		</div>
 
 		<script>
+			window.addEventListener("error", (e) => {
+				const banner = document.createElement("div");
+				banner.style.cssText = "position:fixed;top:0;left:0;right:0;background:#b3261e;color:#fff;padding:0.75rem 1rem;font-family:monospace;font-size:13px;z-index:9999;white-space:pre-wrap;";
+				banner.textContent = `JS ERROR: ${e.message}\n  at ${e.filename}:${e.lineno}:${e.colno}`;
+				document.body.prepend(banner);
+			});
+
 			const themeFileSelect = document.getElementById("theme-file-select");
 			const schemeButtons = document.getElementById("scheme-buttons");
 			const themeStatus = document.getElementById("theme-status");
@@ -1040,12 +1406,16 @@
 			);
 			const lineHeightGroups = document.getElementById("line-height-groups");
 			const fontStyleCards = document.getElementById("font-style-cards");
-			const iconExportSource = document.getElementById("icon-export-source");
 			const exportThemePackageButton = document.getElementById(
 				"export-theme-package-button",
 			);
 			const exportStatus = document.getElementById("export-status");
 			const componentNavList = document.getElementById("component-nav-list");
+			const iconRoleList      = document.getElementById("icon-role-list");
+			const iconDropZone      = document.getElementById("icon-drop-zone");
+			const iconDropStatus    = document.getElementById("icon-drop-zone-status");
+			const projectNameInput  = document.getElementById("project-name-input");
+			const primaryColorInput = document.getElementById("primary-color-input");
 			const DEBUG_LOGGING = 0;
 			const WEIGHT_OPTIONS = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 			const COLOR_TOKEN_OPTIONS = [
@@ -1300,6 +1670,8 @@
 			];
 
 			let loadedTheme = null;
+			let loadedThemeFileName = null;
+			let activeSchemeKey = null;
 			let iconFiles = [];
 			let fontFamilyCatalog = [];
 			let fontItemCatalog = [];
@@ -1310,6 +1682,11 @@
 				LINE_HEIGHT_GROUPS.map((group) => [group.id, group.defaultMultiplier]),
 			);
 			let typographyEventsBound = false;
+			// Typography baseline: family key applied by the global font selector.
+			// Roles in typographyRoleOverrides have been individually changed and
+			// are not updated when the baseline changes.
+			let typographyBaselineFamilyKey = "__default__";
+			const typographyRoleOverrides = new Set();
 			const loadedFontFamilies = new Map();
 
 			/**
@@ -1361,6 +1738,7 @@
 			 * setIconStatus("Detected 300 icons");
 			 */
 			function setIconStatus(message, isError = false) {
+				if (!iconStatus) return;
 				iconStatus.textContent = message;
 				iconStatus.classList.toggle("error", isError);
 			}
@@ -1470,6 +1848,11 @@
 
 				const isDark = schemeName.startsWith("dark");
 				document.body.style.colorScheme = isDark ? "dark" : "light";
+
+				activeSchemeKey = schemeName;
+				if (primaryColorInput && scheme.primary) {
+					primaryColorInput.value = scheme.primary;
+				}
 			}
 
 			/**
@@ -1496,6 +1879,58 @@
 					`"${familyName}", "Lato", sans-serif`,
 				);
 				setFontStatus(`Using ${getBaseName(fontFileName)}`);
+			}
+
+			/**
+			 * Resolve a font file name to its family_key from fontItemCatalog.
+			 * Returns "__default__" when fontFileName is empty or not found.
+			 * @param {string} fontFileName Font file name from the global font selector.
+			 * @returns {string} Family key for use in typography role state.
+			 * @example
+			 * familyKeyFromFontFile("YuGothR.ttc");
+			 * // → "yu-goth"
+			 */
+			function familyKeyFromFontFile(fontFileName) {
+				if (!fontFileName) return "__default__";
+				const item = fontItemCatalog.find((i) => i.file_name === fontFileName);
+				return item ? String(item.family_key) : "__default__";
+			}
+
+			/**
+			 * Apply a font family key as the global baseline for all typography roles
+			 * that have not been individually overridden by the user.
+			 *
+			 * Roles in typographyRoleOverrides are skipped. All other roles get their
+			 * familyKey updated, their weight clamped to the nearest available weight,
+			 * and the preview font loaded. Cards are re-rendered after all updates.
+			 *
+			 * @param {string} familyKey Family key to set as the new global baseline.
+			 * @returns {Promise<void>}
+			 * @example
+			 * await applyBaselineFontToTypography("yu-goth");
+			 */
+			async function applyBaselineFontToTypography(familyKey) {
+				typographyBaselineFamilyKey = familyKey;
+
+				const loadPromises = TYPOGRAPHY_ROLE_DEFINITIONS.map(async (role) => {
+					if (typographyRoleOverrides.has(role.id)) return;
+
+					const state = typographyRoleState.get(role.id);
+					if (!state) return;
+
+					state.familyKey = familyKey;
+					const nextWeights = getAvailableWeightsForFamily(familyKey);
+					state.weight = pickNearestWeight(nextWeights, state.weight);
+
+					try {
+						await ensurePreviewFamilyLoaded(familyKey, state.weight);
+					} catch (error) {
+						setFontStatus(`Unable to load preview font: ${error.message}`, true);
+					}
+				});
+
+				await Promise.all(loadPromises);
+				renderTypographyCards();
 			}
 
 			/**
@@ -1614,30 +2049,8 @@
 				const iconSources = payload.icon_sources || [];
 				iconFiles = payload.icon_files || [];
 
-				if (iconExportSource) {
-					iconExportSource.innerHTML = "";
-					const exportAllOption = document.createElement("option");
-					exportAllOption.value = "all";
-					exportAllOption.textContent = `All sources (${iconFiles.length})`;
-					iconExportSource.appendChild(exportAllOption);
-
-					iconSources.forEach((sourceInfo) => {
-						const option = document.createElement("option");
-						option.value = sourceInfo.source;
-						option.textContent = `${sourceInfo.source} (${sourceInfo.count})`;
-						iconExportSource.appendChild(option);
-					});
-				}
-
 				if (iconFiles.length === 0) {
 					setIconStatus("No icon files found in icons/");
-					if (iconExportSource) {
-						iconExportSource.innerHTML = "";
-						const noneOption = document.createElement("option");
-						noneOption.value = "all";
-						noneOption.textContent = "No icon files available";
-						iconExportSource.appendChild(noneOption);
-					}
 					return;
 				}
 
@@ -1969,6 +2382,9 @@
 					});
 
 					familySelect.addEventListener("change", async () => {
+						// Mark this role as individually overridden so the global
+						// font selector baseline no longer resets it.
+						typographyRoleOverrides.add(role.id);
 						state.familyKey = familySelect.value;
 						const nextWeights = getAvailableWeightsForFamily(state.familyKey);
 						state.weight = pickNearestWeight(nextWeights, state.weight);
@@ -2411,8 +2827,12 @@
 			/**
 			 * POST typography/theme configuration and download zip export package.
 			 * Payload fields expected by server.py _handle_export_package():
-			 *   theme_file, selected_font_files, icon_source, typography_json,
+			 *   theme_file, selected_font_files, selected_icon_files, typography_json,
 			 *   plain_font_css, brand_font_css
+			 *
+			 * selected_icon_files: list of relative paths under icons/ for the icons
+			 * selected in the icon role browser (one per role, selected weight only).
+			 * Paths are in the form "normalized/{weight}/{filename}".
 			 * @returns {Promise<void>}
 			 * @example
 			 * await exportThemePackage();
@@ -2423,11 +2843,20 @@
 					return;
 				}
 
+				// Collect the single selected file per role from iconRoleSelections.
+				const selectedIconFiles = [];
+				iconRoleSelections.forEach((sel) => {
+					const file = resolveIconFile(sel.variant, sel.weight);
+					if (file) {
+						selectedIconFiles.push(`normalized/${sel.weight}/${file}`);
+					}
+				});
+
 				const typographyJson = buildTypographyExportJson();
 				const payload = {
 					theme_file: themeFileSelect.value,
 					selected_font_files: getSelectedFontFilesForExport(),
-					icon_source: iconExportSource?.value || "all",
+					selected_icon_files: selectedIconFiles,
 					typography_json: typographyJson,
 					plain_font_css: buildFontCssForExport("body-large"),
 					brand_font_css: buildFontCssForExport("display-large"),
@@ -2516,7 +2945,42 @@
 			}
 
 			/**
+			 * Pick the scheme key that best matches the current OS color preference.
+			 *
+			 * Priority order per system state:
+			 *   dark + forced-colors  →  dark-high-contrast, light-high-contrast, dark, light
+			 *   light + forced-colors →  light-high-contrast, dark-high-contrast, light, dark
+			 *   dark                  →  dark, dark-medium-contrast, light, first available
+			 *   light                 →  light, light-medium-contrast, dark, first available
+			 *
+			 * @param {string[]} schemes Available scheme keys from the loaded theme JSON.
+			 * @returns {string} Best-matching scheme key.
+			 * @example
+			 * pickSystemScheme(["light", "dark", "dark-high-contrast"]);
+			 * // → "dark"  (when OS is in dark mode)
+			 */
+			function pickSystemScheme(schemes) {
+				const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+				const prefersHC   = window.matchMedia("(forced-colors: active)").matches;
+
+				const pick = (candidates) => candidates.find((k) => schemes.includes(k));
+
+				if (prefersHC && prefersDark) {
+					return pick(["dark-high-contrast", "light-high-contrast", "dark", "light"]) ?? schemes[0];
+				}
+				if (prefersHC) {
+					return pick(["light-high-contrast", "dark-high-contrast", "light", "dark"]) ?? schemes[0];
+				}
+				if (prefersDark) {
+					return pick(["dark", "dark-medium-contrast", "light"]) ?? schemes[0];
+				}
+				return pick(["light", "light-medium-contrast", "dark"]) ?? schemes[0];
+			}
+
+			/**
 			 * Render one button per scheme in the selected theme.
+			 * Automatically applies the scheme that best matches the OS color preference
+			 * (dark/light/forced-colors) via pickSystemScheme() on initial load.
 			 * @param {{schemes?: Record<string, Record<string, string>>}} themeJson Parsed theme JSON.
 			 * @returns {void}
 			 * @example
@@ -2541,8 +3005,7 @@
 					schemeButtons.appendChild(button);
 				});
 
-				const defaultScheme = schemes.includes("light") ? "light" : schemes[0];
-				applyScheme(defaultScheme);
+				applyScheme(pickSystemScheme(schemes));
 			}
 
 			/**
@@ -2568,8 +3031,16 @@
 					throw new Error(`Unable to load ${themeFileName}`);
 				}
 				loadedTheme = await response.json();
+				loadedThemeFileName = themeFileName;
 				logDebug("Loaded theme payload", themeFileName, loadedTheme);
 				setStatus(`Loaded ${themeFileName}`);
+
+				if (projectNameInput) {
+					projectNameInput.value = themeFileName
+						.replace(/^material-theme-/, "")
+						.replace(/\.json$/, "");
+				}
+
 				renderSchemeButtons(loadedTheme);
 			}
 
@@ -2790,6 +3261,507 @@
 				}
 			}
 
+			// ── Icon Role Browser state ───────────────────────────────────────────
+			// normalizedIconInventory: API response from /api/icons/normalized.
+			// iconRoleSelections: Map<roleId, {variant: string, weight: string}>
+			//   — current user selections per role, persisted across re-renders.
+			let normalizedIconInventory = null;
+			const iconRoleSelections = new Map();
+
+			/**
+			 * 18 main-primary icon roles with display metadata and default variant keys.
+			 * variant: prefix to match in the normalized inventory (without weight suffix).
+			 * previewSize: display size (px) for the right-side role context preview.
+			 * defaultWeight: initial weight selection.
+			 *
+			 * @type {Array<{id:string, label:string, variant:string, previewSize:number, defaultWeight:string}>}
+			 */
+			const ICON_ROLE_DEFINITIONS = [
+				{ id: "home",         label: "Home",              variant: "home-outline-01",          previewSize: 28, defaultWeight: "normal" },
+				{ id: "search",       label: "Search",            variant: "search-outline-01",        previewSize: 24, defaultWeight: "normal" },
+				{ id: "menu",         label: "Menu",              variant: "menu-outline-01",          previewSize: 24, defaultWeight: "normal" },
+				{ id: "close",        label: "Close",             variant: "close-01",                 previewSize: 20, defaultWeight: "normal" },
+				{ id: "add",          label: "Add",               variant: "add-circle-outline-01",    previewSize: 28, defaultWeight: "normal" },
+				{ id: "edit",         label: "Edit",              variant: "create-outline-01",        previewSize: 22, defaultWeight: "normal" },
+				{ id: "delete",       label: "Delete",            variant: "trash-outline-01",         previewSize: 22, defaultWeight: "normal" },
+				{ id: "save",         label: "Save",              variant: "device-floppy-save",       previewSize: 22, defaultWeight: "normal" },
+				{ id: "settings",     label: "Settings",          variant: "cog-outline-01",           previewSize: 24, defaultWeight: "normal" },
+				{ id: "user",         label: "User / Profile",    variant: "person-outline-01",        previewSize: 26, defaultWeight: "normal" },
+				{ id: "people",       label: "People / Team",     variant: "people-outline-01",        previewSize: 26, defaultWeight: "normal" },
+				{ id: "notifications",label: "Notifications",     variant: "alarm-outline-01",         previewSize: 24, defaultWeight: "normal" },
+				{ id: "message",      label: "Message / Chat",    variant: "chatbubbles-outline-01",   previewSize: 24, defaultWeight: "normal" },
+				{ id: "calendar",     label: "Calendar",          variant: "calendar-outline-01",      previewSize: 22, defaultWeight: "normal" },
+				{ id: "document",     label: "File / Document",   variant: "document-outline-01",      previewSize: 22, defaultWeight: "normal" },
+				{ id: "folder",       label: "Folder",            variant: "folder-outline-01",        previewSize: 24, defaultWeight: "normal" },
+				{ id: "download",     label: "Upload / Download", variant: "download-outline-01",      previewSize: 22, defaultWeight: "normal" },
+				{ id: "share",        label: "Share",             variant: "share-outline-01",         previewSize: 22, defaultWeight: "normal" },
+			];
+
+			/**
+			 * Resolve which normalized file name to use for a given role, variant key,
+			 * and weight.  Outline icons have a weight suffix; filled icons do not.
+			 * Falls back through outline→filled→first-match-for-variant.
+			 *
+			 * @param {string} variantKey  Glyph variant key (no weight suffix, no .svg).
+			 * @param {string} weight      "light" | "normal" | "medium".
+			 * @returns {string|null} File name within the weight folder, or null.
+			 * @example
+			 * resolveIconFile("home-outline-01", "normal")
+			 * // → "home-outline-01-normal.svg"
+			 */
+			function resolveIconFile(variantKey, weight) {
+				if (!normalizedIconInventory) return null;
+				const weightFiles = normalizedIconInventory.weights[weight] || [];
+				// Prefer exact outline match with weight suffix
+				const outlineName = `${variantKey}-${weight}.svg`;
+				if (weightFiles.includes(outlineName)) return outlineName;
+				// Filled match (no suffix)
+				const filledName = `${variantKey}.svg`;
+				if (weightFiles.includes(filledName)) return filledName;
+				// Prefix match — pick first
+				const prefix = variantKey.toLowerCase();
+				return weightFiles.find((f) => f.toLowerCase().startsWith(prefix)) ?? null;
+			}
+
+			/**
+			 * Return the URL path for an icon file in a given weight folder.
+			 * @param {string} fileName  File name within the weight subfolder.
+			 * @param {string} weight    "light" | "normal" | "medium".
+			 * @returns {string} Absolute URL path.
+			 * @example
+			 * iconUrl("home-outline-01-normal.svg", "normal")
+			 * // → "/icons/normalized/normal/home-outline-01-normal.svg"
+			 */
+			function iconUrl(fileName, weight) {
+				return `/icons/normalized/${weight}/${encodeURIComponent(fileName)}`;
+			}
+
+			/**
+			 * Return all variant keys from the inventory that match a role's default
+			 * variant prefix, plus any other variants containing the role id keyword.
+			 * Deduped and sorted.
+			 *
+			 * @param {string} defaultVariant Default variant key for the role.
+			 * @param {string} roleId         Role id string used as secondary keyword.
+			 * @returns {string[]} Sorted variant key array.
+			 * @example
+			 * getVariantsForRole("home-outline-01", "home")
+			 */
+			function getVariantsForRole(defaultVariant, roleId) {
+				if (!normalizedIconInventory) return [defaultVariant];
+				const all = normalizedIconInventory.variants || [];
+				const keyword = roleId.toLowerCase();
+				const matched = all.filter(
+					(v) => v.toLowerCase().startsWith(keyword) ||
+					       v.toLowerCase().includes(keyword),
+				);
+				// Always include the default even if not in inventory
+				if (!matched.includes(defaultVariant)) matched.unshift(defaultVariant);
+				return [...new Set(matched)].sort();
+			}
+
+			/**
+			 * Apply a CSS mask-image to a thumb element using an icon URL.
+			 * The icon color is inherited via background-color: currentColor.
+			 *
+			 * @param {HTMLElement} thumbEl The element to apply the mask to.
+			 * @param {string} url          Icon file URL (absolute path).
+			 * @returns {void}
+			 * @example
+			 * applyThumbMask(el, "/icons/normalized/normal/home-outline-01-normal.svg");
+			 */
+			function applyThumbMask(thumbEl, url) {
+				const maskVal = `url(${url})`;
+				thumbEl.style.webkitMaskImage = maskVal;
+				thumbEl.style.maskImage = maskVal;
+			}
+
+			/**
+			 * Build and return one icon role bar element for a given role definition.
+			 * Wires up: custom dropdown (variant), weight radios, and role preview.
+			 * Stores initial selection in iconRoleSelections.
+			 *
+			 * @param {{id:string, label:string, variant:string, previewSize:number, defaultWeight:string}} role
+			 * @returns {HTMLElement} Populated .icon-role-bar article element.
+			 * @example
+			 * iconRoleList.appendChild(buildIconRoleBar(ICON_ROLE_DEFINITIONS[0]));
+			 */
+			function buildIconRoleBar(role) {
+				const existing = iconRoleSelections.get(role.id) || {
+					variant: role.variant,
+					weight: role.defaultWeight,
+				};
+				iconRoleSelections.set(role.id, existing);
+
+				const bar = document.createElement("div");
+				bar.className = "icon-role-bar";
+				bar.dataset.roleId = role.id;
+
+				// ── Left: label + custom dropdown ─────────────────────────────────
+				const left = document.createElement("div");
+				left.className = "icon-role-bar__left";
+
+				const labelEl = document.createElement("span");
+				labelEl.className = "icon-role-bar__label md-typescale-label-medium";
+				labelEl.textContent = role.label;
+
+				const dropdown = buildIconDropdown(role, existing);
+				left.append(labelEl, dropdown);
+
+				// ── Center: weight radios ──────────────────────────────────────────
+				const weightGroup = document.createElement("div");
+				weightGroup.className = "icon-weight-radios";
+				const radioName = `icon-weight-${role.id}`;
+
+				["light", "normal", "medium"].forEach((w) => {
+					const lbl = document.createElement("label");
+					lbl.className = "icon-weight-radio";
+					const radio = document.createElement("input");
+					radio.type = "radio";
+					radio.name = radioName;
+					radio.value = w;
+					radio.checked = w === existing.weight;
+					const span = document.createElement("span");
+					span.textContent = w;
+					lbl.append(radio, span);
+					weightGroup.appendChild(lbl);
+
+					radio.addEventListener("change", () => {
+						if (!radio.checked) return;
+						existing.weight = w;
+						// Update dropdown thumbnail to reflect new weight
+						const thumb = dropdown.querySelector(".icon-dropdown__thumb");
+						const resolvedFile = resolveIconFile(existing.variant, w);
+						if (thumb && resolvedFile) {
+							applyThumbMask(thumb, iconUrl(resolvedFile, w));
+						}
+						// Update role preview
+						updateRolePreview(bar, existing);
+					});
+				});
+
+				// ── Right: role context preview ────────────────────────────────────
+				const preview = document.createElement("div");
+				preview.className = "icon-role-preview";
+				const previewImg = document.createElement("span");
+				previewImg.className = "icon-role-preview__img";
+				previewImg.style.width  = `${role.previewSize}px`;
+				previewImg.style.height = `${role.previewSize}px`;
+				preview.appendChild(previewImg);
+
+				bar.append(left, weightGroup, preview);
+
+				// Initial preview paint
+				updateRolePreview(bar, existing);
+
+				return bar;
+			}
+
+			/**
+			 * Build the custom dropdown widget for one icon role.
+			 * Returns the trigger element; the panel is appended to the trigger.
+			 *
+			 * @param {{id:string, label:string, variant:string}} role
+			 * @param {{variant:string, weight:string}} selection Mutable selection object.
+			 * @returns {HTMLElement} The dropdown trigger element.
+			 * @example
+			 * left.appendChild(buildIconDropdown(role, selection));
+			 */
+			function buildIconDropdown(role, selection) {
+				const variants = getVariantsForRole(role.variant, role.id);
+
+				const trigger = document.createElement("div");
+				trigger.className = "icon-dropdown";
+				trigger.setAttribute("role", "combobox");
+				trigger.setAttribute("aria-haspopup", "listbox");
+				trigger.setAttribute("aria-expanded", "false");
+				trigger.tabIndex = 0;
+
+				const thumb = document.createElement("span");
+				thumb.className = "icon-dropdown__thumb";
+				thumb.style.width  = "20px";
+				thumb.style.height = "20px";
+
+				const nameSpan = document.createElement("span");
+				nameSpan.className = "icon-dropdown__name";
+				nameSpan.textContent = selection.variant;
+
+				const arrow = document.createElement("span");
+				arrow.className = "icon-dropdown__arrow";
+				arrow.textContent = "▾";
+
+				const panel = document.createElement("div");
+				panel.className = "icon-dropdown-panel";
+				panel.setAttribute("role", "listbox");
+				panel.hidden = true;
+
+				variants.forEach((variantKey) => {
+					const opt = document.createElement("div");
+					opt.className = "icon-dropdown-option";
+					opt.setAttribute("role", "option");
+					opt.setAttribute("aria-selected", String(variantKey === selection.variant));
+					opt.dataset.variant = variantKey;
+
+					const optThumb = document.createElement("span");
+					optThumb.className = "icon-dropdown-option__thumb";
+					optThumb.style.width  = "20px";
+					optThumb.style.height = "20px";
+
+					const resolvedFile = resolveIconFile(variantKey, selection.weight);
+					if (resolvedFile) {
+						applyThumbMask(optThumb, iconUrl(resolvedFile, selection.weight));
+					}
+
+					const optName = document.createElement("span");
+					optName.textContent = variantKey;
+					opt.append(optThumb, optName);
+
+					opt.addEventListener("click", (e) => {
+						e.stopPropagation();
+						selection.variant = variantKey;
+						nameSpan.textContent = variantKey;
+						const newFile = resolveIconFile(variantKey, selection.weight);
+						if (newFile) applyThumbMask(thumb, iconUrl(newFile, selection.weight));
+						panel.querySelectorAll(".icon-dropdown-option").forEach((o) => {
+							o.setAttribute("aria-selected", String(o.dataset.variant === variantKey));
+						});
+						closeDropdown();
+						// Update the bar's role preview
+						const bar = trigger.closest(".icon-role-bar");
+						if (bar) updateRolePreview(bar, selection);
+					});
+
+					panel.appendChild(opt);
+				});
+
+				trigger.append(thumb, nameSpan, arrow, panel);
+
+				// Paint initial thumb
+				const initFile = resolveIconFile(selection.variant, selection.weight);
+				if (initFile) applyThumbMask(thumb, iconUrl(initFile, selection.weight));
+
+				function openDropdown() {
+					// Refresh option thumbs for current weight before opening
+					panel.querySelectorAll(".icon-dropdown-option").forEach((opt) => {
+						const vk = opt.dataset.variant;
+						const rf = resolveIconFile(vk, selection.weight);
+						const ot = opt.querySelector(".icon-dropdown-option__thumb");
+						if (rf && ot) applyThumbMask(ot, iconUrl(rf, selection.weight));
+					});
+					panel.hidden = false;
+					trigger.setAttribute("aria-expanded", "true");
+				}
+
+				function closeDropdown() {
+					panel.hidden = true;
+					trigger.setAttribute("aria-expanded", "false");
+				}
+
+				trigger.addEventListener("click", (e) => {
+					e.stopPropagation();
+					panel.hidden ? openDropdown() : closeDropdown();
+				});
+				trigger.addEventListener("keydown", (e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						panel.hidden ? openDropdown() : closeDropdown();
+					}
+					if (e.key === "Escape") closeDropdown();
+				});
+				// Close when clicking outside
+				document.addEventListener("click", () => closeDropdown(), { capture: false });
+
+				return trigger;
+			}
+
+			/**
+			 * Repaint the role preview image for a bar using its current selection.
+			 *
+			 * @param {HTMLElement} bar      The .icon-role-bar element.
+			 * @param {{variant:string, weight:string}} selection
+			 * @returns {void}
+			 * @example
+			 * updateRolePreview(bar, { variant: "home-outline-01", weight: "normal" });
+			 */
+			function updateRolePreview(bar, selection) {
+				const previewImg = bar.querySelector(".icon-role-preview__img");
+				if (!previewImg) return;
+				const resolvedFile = resolveIconFile(selection.variant, selection.weight);
+				if (resolvedFile) {
+					applyThumbMask(previewImg, iconUrl(resolvedFile, selection.weight));
+				}
+			}
+
+			/**
+			 * Fetch /api/icons/normalized, build all 18 role bars, wire the drop zone.
+			 * Called once at startup after icon inventory is available.
+			 *
+			 * @returns {Promise<void>}
+			 * @example
+			 * await initializeIconRoleBrowser();
+			 */
+			async function initializeIconRoleBrowser() {
+				if (!iconRoleList) return;
+
+				try {
+					const response = await fetch("/api/icons/normalized");
+					if (!response.ok) throw new Error("Failed to load normalized icon inventory");
+					normalizedIconInventory = await response.json();
+				} catch (error) {
+					iconRoleList.textContent = `Unable to load normalized icons: ${error.message}`;
+					return;
+				}
+
+				iconRoleList.innerHTML = "";
+				ICON_ROLE_DEFINITIONS.forEach((role) => {
+					iconRoleList.appendChild(buildIconRoleBar(role));
+				});
+
+				bindIconDropZone();
+			}
+
+			/**
+			 * Wire the drag/drop normalization zone.
+			 * Accepts SVG file drops → POSTs to /api/normalize-icons →
+			 * refreshes inventory and re-renders all role bars on success.
+			 *
+			 * @returns {void}
+			 * @example
+			 * bindIconDropZone();
+			 */
+			function bindIconDropZone() {
+				if (!iconDropZone) return;
+
+				function setDropStatus(msg, isError = false) {
+					if (!iconDropStatus) return;
+					iconDropStatus.textContent = msg;
+					iconDropStatus.style.color = isError
+						? "var(--md-sys-color-error, #b3261e)"
+						: "";
+				}
+
+				iconDropZone.addEventListener("dragover", (e) => {
+					e.preventDefault();
+					iconDropZone.classList.add("drag-over");
+				});
+				iconDropZone.addEventListener("dragleave", () => {
+					iconDropZone.classList.remove("drag-over");
+				});
+				iconDropZone.addEventListener("drop", async (e) => {
+					e.preventDefault();
+					iconDropZone.classList.remove("drag-over");
+					const files = Array.from(e.dataTransfer?.files || []).filter((f) =>
+						f.name.toLowerCase().endsWith(".svg"),
+					);
+					if (files.length === 0) {
+						setDropStatus("No SVG files detected in drop.", true);
+						return;
+					}
+					setDropStatus(`Normalizing ${files.length} file(s)…`);
+					try {
+						const formData = new FormData();
+						files.forEach((f) => formData.append("file", f, f.name));
+						const response = await fetch("/api/normalize-icons", {
+							method: "POST",
+							body: formData,
+						});
+						const result = await response.json();
+						const totalWritten = Object.values(result.written || {}).reduce(
+							(sum, arr) => sum + arr.length, 0,
+						);
+						if (result.errors?.length) {
+							setDropStatus(
+								`Done: ${totalWritten} files written. Errors: ${result.errors.join("; ")}`,
+								true,
+							);
+						} else {
+							setDropStatus(`Normalized ${totalWritten} files across 3 weights.`);
+						}
+						// Refresh inventory and re-render bars
+						await initializeIconRoleBrowser();
+					} catch (error) {
+						setDropStatus(`Upload failed: ${error.message}`, true);
+					}
+				});
+
+				// Also allow click-to-upload
+				iconDropZone.addEventListener("click", () => {
+					const input = document.createElement("input");
+					input.type = "file";
+					input.multiple = true;
+					input.accept = ".svg";
+					input.addEventListener("change", async () => {
+						const files = Array.from(input.files || []).filter((f) =>
+							f.name.toLowerCase().endsWith(".svg"),
+						);
+						if (files.length === 0) return;
+						setDropStatus(`Normalizing ${files.length} file(s)…`);
+						try {
+							const formData = new FormData();
+							files.forEach((f) => formData.append("file", f, f.name));
+							const response = await fetch("/api/normalize-icons", {
+								method: "POST",
+								body: formData,
+							});
+							const result = await response.json();
+							const totalWritten = Object.values(result.written || {}).reduce(
+								(sum, arr) => sum + arr.length, 0,
+							);
+							setDropStatus(`Normalized ${totalWritten} files across 3 weights.`);
+							await initializeIconRoleBrowser();
+						} catch (error) {
+							setDropStatus(`Upload failed: ${error.message}`, true);
+						}
+					});
+					input.click();
+				});
+			}
+
+			/**
+			 * Wire a collapsible section toggle button.
+			 * Toggles a --collapsed CSS modifier on the section, flips aria-expanded,
+			 * and updates the icon between ▲ (expanded) and ▼ (collapsed).
+			 * @param {string} sectionId Section element ID.
+			 * @param {string} toggleId Toggle button element ID.
+			 * @param {string} collapsedClass CSS modifier class to toggle on the section.
+			 * @param {string} iconSelector Selector for the icon span inside the toggle.
+			 * @returns {void}
+			 * @example
+			 * bindCollapseToggle("typography-studio", "typography-studio-toggle",
+			 *     "typography-studio--collapsed", ".typography-studio__toggle-icon");
+			 */
+			function bindCollapseToggle(sectionId, toggleId, collapsedClass, iconSelector) {
+				const section = document.getElementById(sectionId);
+				const toggle  = document.getElementById(toggleId);
+				if (!section || !toggle) return;
+
+				toggle.addEventListener("click", () => {
+					const isCollapsed = section.classList.toggle(collapsedClass);
+					toggle.setAttribute("aria-expanded", String(!isCollapsed));
+					const icon = toggle.querySelector(iconSelector);
+					if (icon) icon.textContent = isCollapsed ? "▼" : "▲";
+				});
+			}
+
+			bindCollapseToggle(
+				"typography-studio",
+				"typography-studio-toggle",
+				"typography-studio--collapsed",
+				".typography-studio__toggle-icon",
+			);
+			bindCollapseToggle(
+				"numeric-features",
+				"numeric-features-toggle",
+				"numeric-features-card--collapsed",
+				".numeric-features-card__toggle-icon",
+			);
+			bindCollapseToggle(
+				"icon-role-browser",
+				"icon-role-browser-toggle",
+				"icon-role-browser--collapsed",
+				".icon-role-browser__toggle-icon",
+			);
+
 			themeFileSelect.addEventListener("change", async () => {
 				try {
 					await loadThemeFile(themeFileSelect.value);
@@ -2801,6 +3773,10 @@
 			fontSelect.addEventListener("change", async () => {
 				try {
 					await applyFontSelection(fontSelect.value);
+					// Push the selected font to all non-overridden typography roles.
+					// typographyRoleOverrides tracks cards the user has individually changed.
+					const baselineKey = familyKeyFromFontFile(fontSelect.value);
+					await applyBaselineFontToTypography(baselineKey);
 				} catch (error) {
 					setFontStatus(`Unable to load font: ${error.message}`, true);
 				}
@@ -2812,8 +3788,45 @@
 				});
 			}
 
-			initializeComponentSections();
-			initializeComponentJumpList();
+			if (projectNameInput) {
+					const commitProjectRename = async () => {
+						const raw = projectNameInput.value.trim();
+						if (!raw || !loadedThemeFileName) return;
+						const newName = `material-theme-${raw}.json`;
+						if (newName === loadedThemeFileName) return;
+						try {
+							const response = await fetch("/api/theme/rename", {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({ from_name: loadedThemeFileName, to_name: newName }),
+							});
+							if (!response.ok) {
+								const err = await response.json();
+								setStatus(`Rename failed: ${err.error}`, true);
+								return;
+							}
+							// Update the file selector option to reflect the new name.
+							Array.from(themeFileSelect.options).forEach((opt) => {
+								if (opt.value === loadedThemeFileName) {
+									opt.value = newName;
+									opt.textContent = newName;
+								}
+							});
+							loadedThemeFileName = newName;
+							setStatus(`Renamed to ${newName}`);
+						} catch (err) {
+							setStatus(`Rename error: ${err.message}`, true);
+						}
+					};
+
+					projectNameInput.addEventListener("blur", commitProjectRename);
+					projectNameInput.addEventListener("keydown", (e) => {
+						if (e.key === "Enter") projectNameInput.blur();
+					});
+				}
+
+				initializeComponentSections();
+				initializeComponentJumpList();
 			initializeInteractiveDemos();
 			initializeNumericFeatures();
 			initializeTypographyStudio();
@@ -2825,6 +3838,9 @@
 			});
 			loadThemeFiles().catch((error) => {
 				setStatus(error.message, true);
+			});
+			initializeIconRoleBrowser().catch((error) => {
+				if (iconRoleList) iconRoleList.textContent = `Icon browser error: ${error.message}`;
 			});
 		</script>
 	</body>
