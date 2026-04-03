@@ -1,0 +1,3 @@
+# Tell GitHub Linguist that _imports/ is vendored (TypeScript compiler + Dart Sass binaries).
+# Excluded from repository language statistics.
+_imports/ linguist-vendored
