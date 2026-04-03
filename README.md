@@ -1,4 +1,4 @@
-# Visual Theme Foundry — v1.3
+# Visual Theme Foundry — v1.40
 
 A local-first tool for previewing and exporting Material Design 3 themes, typography, fonts, and icons for web applications.
 

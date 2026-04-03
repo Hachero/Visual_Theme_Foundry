@@ -387,6 +387,15 @@ def _resolve_dart_sass(project_root: Path) -> tuple[Path, Path] | None:
         )
         return None
 
+    # Ensure the binary is executable on non-Windows (git clones from Windows
+    # may lose the +x bit; fix silently rather than requiring a manual chmod).
+    if current_platform != "win32":
+        import stat as _stat
+        mode = dart_exe.stat().st_mode
+        if not (mode & _stat.S_IXUSR):
+            dart_exe.chmod(mode | _stat.S_IXUSR | _stat.S_IXGRP | _stat.S_IXOTH)
+            LOGGER.info("Dart Sass: set executable bit on %s", dart_exe)
+
     return dart_exe, snapshot
 
 
@@ -516,6 +525,8 @@ def _substitute_color_tokens(template_text: str, theme_json: dict) -> str:
     Reads light and dark scheme colors from theme_json.schemes.{light,dark} and
     substitutes them into any line matching the pattern:
       $md-sys-color-<name>: #RRGGBB !default;
+    Group 1 = variable name, group 2 = whitespace after colon (colon is outside
+    the group to avoid doubling it in the replacement).
 
     Light tokens map camelCase JSON keys to $md-sys-color-<kebab> variables.
     Dark tokens map the same keys to $md-sys-color-<kebab>-dark variables.
@@ -552,7 +563,7 @@ def _substitute_color_tokens(template_text: str, theme_json: dict) -> str:
         return match.group(0)
 
     return re.sub(
-        r"(\$md-sys-color-[\w-]+)(:[ \t]+)(#[0-9A-Fa-f]{6}) !default;",
+        r"(\$md-sys-color-[\w-]+):([ \t]+)(#[0-9A-Fa-f]{6}) !default;",
         _replace_line,
         template_text,
     )
