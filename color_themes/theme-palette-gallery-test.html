@@ -4036,13 +4036,28 @@
 			},
 			"section-forms": {
 				label: "Forms",
-				colors: ["primary", "outline", "outlineVariant", "surface", "onSurface", "onSurfaceVariant", "error", "errorContainer", "onError", "surfaceContainerHigh"],
+				// tertiary/tertiaryContainer/onTertiaryContainer added: used by .input-success border
+				// and .hint-success text color (success validation state).
+				colors: [
+					"primary", "outline", "outlineVariant",
+					"surface", "onSurface", "onSurfaceVariant",
+					"tertiary", "tertiaryContainer", "onTertiaryContainer",
+					"error", "errorContainer", "onError",
+					"surfaceContainerHigh",
+				],
 				typeRoles: ["title-medium", "body-medium", "body-small", "label-large", "button-text", "caption-note"],
 				hasNumbers: false,
 			},
 			"section-feedback": {
 				label: "Feedback & State",
-				colors: ["primary", "primaryContainer", "onPrimaryContainer", "secondary", "secondaryContainer", "tertiary", "tertiaryContainer", "error", "errorContainer", "onError"],
+				// onTertiaryContainer, onSecondaryContainer, onErrorContainer added:
+				// used as text color inside .alert-success, .alert-warning, .alert-danger panels.
+				colors: [
+					"primary", "primaryContainer", "onPrimaryContainer",
+					"secondary", "secondaryContainer", "onSecondaryContainer",
+					"tertiary", "tertiaryContainer", "onTertiaryContainer",
+					"error", "errorContainer", "onError", "onErrorContainer",
+				],
 				typeRoles: ["title-medium", "body-medium", "label-medium", "label-small", "annotation"],
 				hasNumbers: false,
 			},

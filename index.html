@@ -831,6 +831,10 @@
 						>Font Selection</label
 					>
 					<select id="font-select" disabled></select>
+					<label for="weight-select" class="md-typescale-title-small" style="margin-top:8px"
+						>Baseline Weight</label
+					>
+					<select id="weight-select" disabled></select>
 					<div id="font-status" class="status" aria-live="polite"></div>
 				</div>
 
@@ -1746,11 +1750,13 @@
 			});
 
 			const SHARED_STATE_KEY = "vtf-theme-selection";
+			const BUILDER_PREFS_KEY = "vtf-builder-prefs";
 			const themeFileSelect = document.getElementById("theme-file-select");
 			const schemeButtons = document.getElementById("scheme-buttons");
 			const builderSyncToggle = document.getElementById("builder-sync-toggle");
 			const themeStatus = document.getElementById("theme-status");
 			const fontSelect = document.getElementById("font-select");
+			const weightSelect = document.getElementById("weight-select");
 			const fontStatus = document.getElementById("font-status");
 			const iconSourceSelect = document.getElementById("icon-source-select");
 			const iconStatus = document.getElementById("icon-status");
@@ -2372,6 +2378,81 @@
 			}
 
 			/**
+			 * Apply a baseline weight to all typography roles that have not been
+			 * individually overridden.  Clamps each role's weight to the nearest
+			 * available weight for its current family.
+			 * @param {number} weight Target weight (e.g. 400, 700).
+			 * @returns {Promise<void>}
+			 * @example
+			 * await applyBaselineWeightToTypography(700);
+			 */
+			async function applyBaselineWeightToTypography(weight) {
+				const loadPromises = TYPOGRAPHY_ROLE_DEFINITIONS.map(async (role) => {
+					if (typographyRoleOverrides.has(role.id)) return;
+					const state = typographyRoleState.get(role.id);
+					if (!state) return;
+					const available = getAvailableWeightsForFamily(state.familyKey);
+					state.weight = pickNearestWeight(available, weight);
+					try {
+						await ensurePreviewFamilyLoaded(state.familyKey, state.weight);
+					} catch (e) {
+						setFontStatus(`Unable to load preview font: ${e.message}`, true);
+					}
+				});
+				await Promise.all(loadPromises);
+				renderTypographyCards();
+			}
+
+			// ===== BUILDER PREFS (localStorage) =====
+			// Persists font, baseline weight, per-role typography overrides, and numeric
+			// feature checkbox states across page navigations within a tab session.
+			// Color theme selection is NOT stored here — it belongs to SHARED_STATE_KEY.
+			// Only a clear of localStorage (or explicit reset) restores defaults.
+			//
+			// Schema: {
+			//   fontFile:        string  — fontSelect.value
+			//   baselineWeight:  number  — active baseline weight (e.g. 400)
+			//   roleOverrides:   object  — { [roleId]: { familyKey, weight, trackingEm, colorToken } }
+			//   numericFeatures: object  — { [checkboxId]: boolean }
+			// }
+
+			function readBuilderPrefs() {
+				try {
+					const raw = localStorage.getItem(BUILDER_PREFS_KEY);
+					return raw ? JSON.parse(raw) : null;
+				} catch {
+					return null;
+				}
+			}
+
+			function writeBuilderPrefs() {
+				try {
+					const roleOverrides = {};
+					typographyRoleOverrides.forEach((roleId) => {
+						const s = typographyRoleState.get(roleId);
+						if (s) roleOverrides[roleId] = {
+							familyKey: s.familyKey,
+							weight: s.weight,
+							trackingEm: s.trackingEm,
+							colorToken: s.colorToken,
+						};
+					});
+					const numericFeatures = {};
+					document.querySelectorAll(".nf-checkbox").forEach((cb) => {
+						numericFeatures[cb.id] = cb.checked;
+					});
+					localStorage.setItem(BUILDER_PREFS_KEY, JSON.stringify({
+						fontFile:        fontSelect ? fontSelect.value : "",
+						baselineWeight:  weightSelect ? (parseInt(weightSelect.value, 10) || 400) : 400,
+						roleOverrides,
+						numericFeatures,
+					}));
+				} catch {
+					// localStorage unavailable — silent
+				}
+			}
+
+			/**
 			 * Ensure one local font file is loaded via FontFace API.
 			 * @param {string} fontFileName Font file name under fonts/.
 			 * @returns {Promise<string>} Loaded runtime family name.
@@ -2394,7 +2475,10 @@
 			}
 
 			/**
-			 * Load available local fonts and initialize the font selector.
+			 * Load available local fonts and initialize the font selector and weight selector.
+			 * After populating the dropdowns, restores saved builder prefs (font, weight,
+			 * per-role overrides, numeric features) from localStorage key BUILDER_PREFS_KEY.
+			 * If no prefs are saved, falls back to defaults and calls initializeTypographyStudio().
 			 * @returns {Promise<void>}
 			 * @example
 			 * await loadFontFiles();
@@ -2431,11 +2515,102 @@
 
 				if (fontFiles.length === 0) {
 					setFontStatus("No local font files found in fonts/");
+					populateWeightSelect("__default__");
 					initializeTypographyStudio();
 					return;
 				}
 
 				setFontStatus(`Detected ${fontFiles.length} local font file(s)`);
+
+				// Restore prefs before initializing typography studio so the
+				// baseline font + weight are applied on first render.
+				const prefs = readBuilderPrefs();
+				if (prefs) {
+					await restoreBuilderPrefs(prefs);
+				} else {
+					populateWeightSelect("__default__");
+					initializeTypographyStudio();
+				}
+			}
+
+			/**
+			 * Populate the weight selector with available weights for a given family key.
+			 * Enables the select when weights are available; disables it for the default family.
+			 * @param {string} familyKey Family key (or "__default__").
+			 * @param {number} [selectedWeight] Weight to pre-select (defaults to 400).
+			 */
+			function populateWeightSelect(familyKey, selectedWeight = 400) {
+				if (!weightSelect) return;
+				const weights = getAvailableWeightsForFamily(familyKey);
+				weightSelect.innerHTML = "";
+				if (familyKey === "__default__" || weights.length === 0) {
+					const opt = document.createElement("option");
+					opt.value = "400";
+					opt.textContent = "400 (default)";
+					weightSelect.appendChild(opt);
+					weightSelect.disabled = true;
+					return;
+				}
+				const WEIGHT_NAMES = {
+					100: "100 Thin", 200: "200 ExtraLight", 300: "300 Light",
+					400: "400 Regular", 500: "500 Medium", 600: "600 SemiBold",
+					700: "700 Bold", 800: "800 ExtraBold", 900: "900 Black",
+				};
+				weights.forEach((w) => {
+					const opt = document.createElement("option");
+					opt.value = String(w);
+					opt.textContent = WEIGHT_NAMES[w] || String(w);
+					weightSelect.appendChild(opt);
+				});
+				const nearest = pickNearestWeight(weights, selectedWeight);
+				weightSelect.value = String(nearest);
+				weightSelect.disabled = false;
+			}
+
+			/**
+			 * Restore builder preferences from a saved prefs object.
+			 * Called after loadFontFiles() so font catalog is available.
+			 * @param {object} prefs Saved prefs from readBuilderPrefs().
+			 * @returns {Promise<void>}
+			 */
+			async function restoreBuilderPrefs(prefs) {
+				// Restore font selection
+				if (prefs.fontFile && fontSelect) {
+					const opt = fontSelect.querySelector(`option[value="${CSS.escape(prefs.fontFile)}"]`);
+					if (opt) {
+						fontSelect.value = prefs.fontFile;
+						await applyFontSelection(prefs.fontFile);
+					}
+				}
+				const familyKey = familyKeyFromFontFile(fontSelect?.value || "");
+				const savedWeight = prefs.baselineWeight || 400;
+				populateWeightSelect(familyKey, savedWeight);
+				await applyBaselineFontToTypography(familyKey);
+				await applyBaselineWeightToTypography(savedWeight);
+
+				// Restore per-role overrides
+				if (prefs.roleOverrides) {
+					Object.entries(prefs.roleOverrides).forEach(([roleId, saved]) => {
+						const state = typographyRoleState.get(roleId);
+						if (!state) return;
+						state.familyKey  = saved.familyKey  ?? state.familyKey;
+						state.weight     = saved.weight     ?? state.weight;
+						state.trackingEm = saved.trackingEm ?? state.trackingEm;
+						state.colorToken = saved.colorToken ?? state.colorToken;
+						typographyRoleOverrides.add(roleId);
+					});
+				}
+
+				// Restore numeric feature checkboxes
+				if (prefs.numericFeatures) {
+					Object.entries(prefs.numericFeatures).forEach(([id, checked]) => {
+						const cb = document.getElementById(id);
+						if (!cb) return;
+						cb.checked = checked;
+						cb.dispatchEvent(new Event("change"));
+					});
+				}
+
 				initializeTypographyStudio();
 			}
 
@@ -2834,6 +3009,7 @@
 							);
 						}
 						renderTypographyCards();
+						writeBuilderPrefs();
 					});
 
 					const sizeLabel = document.createElement("label");
@@ -2849,8 +3025,10 @@
 					sizeInput.style.width = "100%";
 					sizeInput.style.marginTop = "0.35rem";
 					sizeInput.addEventListener("input", () => {
+						typographyRoleOverrides.add(role.id);
 						state.sizePx = clampNumber(Number(sizeInput.value), 8, 160);
 						renderTypographyCards();
+						writeBuilderPrefs();
 					});
 
 					const trackingLabel = document.createElement("label");
@@ -2866,12 +3044,14 @@
 					trackingInput.style.width = "100%";
 					trackingInput.style.marginTop = "0.35rem";
 					trackingInput.addEventListener("input", () => {
+						typographyRoleOverrides.add(role.id);
 						state.trackingEm = clampNumber(
 							Number(trackingInput.value),
 							-0.2,
 							0.4,
 						);
 						renderTypographyCards();
+						writeBuilderPrefs();
 					});
 
 					const colorLabel = document.createElement("label");
@@ -2890,8 +3070,10 @@
 						colorSelect.appendChild(option);
 					});
 					colorSelect.addEventListener("change", () => {
+						typographyRoleOverrides.add(role.id);
 						state.colorToken = colorSelect.value;
 						renderTypographyCards();
+						writeBuilderPrefs();
 					});
 
 					const weightGrid = document.createElement("div");
@@ -2907,6 +3089,7 @@
 						input.disabled = !availableWeights.includes(weightValue);
 						input.checked = state.weight === weightValue;
 						input.addEventListener("change", async () => {
+							typographyRoleOverrides.add(role.id);
 							state.weight = weightValue;
 							try {
 								await ensurePreviewFamilyLoaded(state.familyKey, state.weight);
@@ -2917,6 +3100,7 @@
 								);
 							}
 							renderTypographyCards();
+							writeBuilderPrefs();
 						});
 
 						const text = document.createElement("span");
@@ -4383,13 +4567,32 @@
 			fontSelect.addEventListener("change", async () => {
 				try {
 					await applyFontSelection(fontSelect.value);
-					// Push the selected font to all non-overridden typography roles.
-					// typographyRoleOverrides tracks cards the user has individually changed.
 					const baselineKey = familyKeyFromFontFile(fontSelect.value);
+					// Repopulate weight dropdown for new family, preserving current weight
+					const currentWeight = weightSelect ? (parseInt(weightSelect.value, 10) || 400) : 400;
+					populateWeightSelect(baselineKey, currentWeight);
 					await applyBaselineFontToTypography(baselineKey);
+					writeBuilderPrefs();
 				} catch (error) {
 					setFontStatus(`Unable to load font: ${error.message}`, true);
 				}
+			});
+
+			if (weightSelect) {
+				weightSelect.addEventListener("change", async () => {
+					try {
+						const weight = parseInt(weightSelect.value, 10) || 400;
+						await applyBaselineWeightToTypography(weight);
+						writeBuilderPrefs();
+					} catch (error) {
+						setFontStatus(`Unable to apply weight: ${error.message}`, true);
+					}
+				});
+			}
+
+			// Persist numeric feature toggles
+			document.querySelectorAll(".nf-checkbox").forEach((cb) => {
+				cb.addEventListener("change", () => writeBuilderPrefs(), { capture: true, passive: true });
 			});
 
 			if (iconSourceSelect) {
